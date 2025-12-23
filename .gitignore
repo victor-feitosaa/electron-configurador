@@ -1,0 +1,12 @@
+# Node
+node_modules/
+
+# Electron
+electron/installers/
+
+# Build
+dist/
+build/
+
+# Env
+.env
