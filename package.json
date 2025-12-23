@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "electron": "electron electron/main.cjs"
+    "electron": "electron electron/main.cjs",
+    "start": "npm run-all --parallel dev electron"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",

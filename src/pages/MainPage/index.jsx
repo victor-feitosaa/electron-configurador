@@ -29,7 +29,6 @@ const configInicial = {
 };
 
 export default function MainPage() {
-  // router
   const navigate = useNavigate();
 
   // "padrao" | "personalizada" | null
@@ -44,7 +43,7 @@ export default function MainPage() {
 
   function handlePadrao() {
     setSelectedOption("padrao");
-    setConfigAtual(configInicial); // reset
+    setConfigAtual(configInicial);
   }
 
   function handlePersonalizada() {
@@ -57,24 +56,28 @@ export default function MainPage() {
     setModalOpen(false);
   }
 
-async function iniciarConfiguracao() {
-  if (!selectedOption) return;
+  async function iniciarConfiguracao() {
+    if (!selectedOption) return;
 
-  if (!window.electron) {
-    console.warn("Electron não disponível (modo web)");
-    return;
+    // segurança para rodar no navegador
+    if (!window.electron) {
+      console.warn("Electron não disponível (modo web)");
+      return;
+    }
+
+    const payload = {
+      tipo: selectedOption,
+      nomeMaquina,
+      config: configAtual,
+    };
+
+    console.log("Payload enviado:", payload);
+
+    navigate("/progress", { state: payload });
+
+    // próximo passo (depois):
+    // navigate("/progresso");
   }
-
-  const payload = {
-    tipo: selectedOption,
-    nomeMaquina,
-    config: configAtual,
-  };
-
-  window.electron.startConfig(payload);
-}
-
-
 
   return (
     <section className="relative z-10 min-h-screen w-full max-w-[1440px] mx-auto flex flex-col justify-center bg-primary py-10">

@@ -1,57 +1,46 @@
-import React, { useEffect, useState } from "react";
-import ProgressBar from "../../components/ProgressBar";
-import LogsPanel from "../../components/LogsPanel";
+import { useEffect, useState } from "react";
+
+const etapas = ["prepare", "apps", "system", "finish"];
 
 export default function ProgressPage() {
-  const [progress, setProgress] = useState(0);
+  const [etapaAtual, setEtapaAtual] = useState("prepare");
   const [logs, setLogs] = useState([]);
-  const [status, setStatus] = useState("running");
 
   useEffect(() => {
-    // Logs em tempo real
-    window.electron.ipcRenderer.on("log", (_, message) => {
-      setLogs((prev) => [...prev, message]);
-    });
+    if (!window.electron) return;
 
-    // Progresso
-    window.electron.ipcRenderer.on("progress", (_, value) => {
-      setProgress(value);
+    window.electron.onProgress(({ etapa, log }) => {
+      setEtapaAtual(etapa);
+      setLogs((prev) => [...prev, `[${etapa}] ${log}`]);
     });
-
-    // Finalização
-    window.electron.ipcRenderer.on("done", () => {
-      setStatus("done");
-      setProgress(100);
-    });
-
-    window.electron.ipcRenderer.on("error", (_, err) => {
-      setStatus("error");
-      setLogs((prev) => [...prev, `❌ Erro: ${err}`]);
-    });
-
-    return () => {
-      window.electron.ipcRenderer.removeAllListeners("log");
-      window.electron.ipcRenderer.removeAllListeners("progress");
-      window.electron.ipcRenderer.removeAllListeners("done");
-      window.electron.ipcRenderer.removeAllListeners("error");
-    };
   }, []);
 
+  const progresso =
+    ((etapas.indexOf(etapaAtual) + 1) / etapas.length) * 100;
+
   return (
-    <section className="min-h-screen bg-primary text-white flex flex-col items-center justify-center p-6">
-      <h1 className="text-2xl font-righteous mb-6">
-        Configuração em andamento
-      </h1>
+    <div className="min-h-screen bg-primary text-white p-6">
+      <h1 className="text-2xl mb-4">Configurando máquina...</h1>
 
-      <ProgressBar progress={progress} />
-
-      <div className="mt-6 w-full max-w-3xl">
-        <LogsPanel logs={logs} />
+      {/* Barra de progresso */}
+      <div className="w-full bg-gray-700 rounded h-4 mb-4">
+        <div
+          className="bg-green-500 h-4 rounded transition-all"
+          style={{ width: `${progresso}%` }}
+        />
       </div>
 
-      <div className="mt-4 text-sm opacity-80">
-        Status: {status}
+      {/* Etapa atual */}
+      <p className="mb-4">
+        Etapa atual: <strong>{etapaAtual}</strong>
+      </p>
+
+      {/* Logs */}
+      <div className="bg-black rounded p-3 h-80 overflow-y-auto text-sm font-mono">
+        {logs.map((log, i) => (
+          <div key={i}>{log}</div>
+        ))}
       </div>
-    </section>
+    </div>
   );
 }
